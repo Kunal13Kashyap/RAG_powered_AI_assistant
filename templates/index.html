@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+  <title>Legal RAG App</title>
+  <style>
+    body { 
+      font-family: Arial; 
+      max-width: 900px; 
+      margin: 30px auto; 
+      line-height: 1.5;
+    }
+    .card { 
+      border: 1px solid #ddd; 
+      padding: 15px; 
+      border-radius: 8px; 
+      margin-bottom: 20px; 
+      background: #fafafa;
+    }
+    .btn { 
+      padding: 8px 15px; 
+      background: #0066ff; 
+      color: white; 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      font-size: 14px;
+    }
+    #loader { 
+      display:none; 
+      margin-top: 10px; 
+      padding:10px; 
+      background:#fff3cd; 
+      border:1px solid #ffeeba; 
+      border-radius:6px;
+    }
+  </style>
+
+  <script>
+  function showLoaderUpload(){
+    document.getElementById("loader").innerText = "Processing document... Please wait.";
+    document.getElementById("loader").style.display = "block";
+  }
+  function showLoaderAsk(){
+    document.getElementById("loader").innerText = "Generating answer... Please wait.";
+    document.getElementById("loader").style.display = "block";
+  }
+  </script>
+</head>
+
+<body>
+
+<h2>Legal RAG (FAISS + Mistral + Ollama)</h2>
+
+<div id="loader"></div>
+
+<!-- Upload PDF -->
+<div class="card">
+  <h3>Upload PDF</h3>
+  <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoaderUpload()">
+    <input type="file" name="file" required>
+    <button class="btn" type="submit">Upload & Index</button>
+  </form>
+</div>
+
+<!-- Ask a Question -->
+<div class="card">
+  <h3>Ask a Question</h3>
+  <form action="/ask" method="post" onsubmit="showLoaderAsk()">
+    <label>Choose Document:</label>
+    <select name="doc" required>
+      <option value="">-- Select Document --</option>
+      {% for d in docs %}
+        <option value="{{ d }}" {% if selected_doc == d %}selected{% endif %}>{{ d }}</option>
+      {% endfor %}
+    </select>
+
+    <br><br>
+    <label>Your Question:</label>
+    <input type="text" name="query" value="{{ query or '' }}" style="width:100%" required>
+
+    <br><br>
+    <button class="btn">Ask</button>
+  </form>
+</div>
+
+<!-- ANSWER SECTION -->
+{% if answer %}
+<div class="card">
+  <h3>Answer</h3>
+
+  <pre style="white-space: pre-wrap; background:#fff; padding:15px; border-radius:6px;">
+{{ answer }}
+  </pre>
+
+  {% if pages %}
+  <h4>Pages Used:</h4>
+  <p>{{ pages }}</p>
+  {% endif %}
+
+  {% if sections %}
+  <h4>Legal Sections Detected:</h4>
+  <p>{{ sections }}</p>
+  {% endif %}
+</div>
+{% endif %}
+
+</body>
+</html>
